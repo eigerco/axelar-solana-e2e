@@ -1,0 +1,76 @@
+{
+    "chains": {
+        "solana-devnet": {
+            "name": "Solana Devnet",
+            "id": "solana-devnet",
+            "axelarId": "solana-devnet",
+            "rpc": "https://api.devnet.solana.com",
+            "tokenSymbol": "SOL",
+            "explorer": {
+                "explorer": "Solana Explorer",
+                "url": "https://explorer.solana.com/?cluster=devnet",
+                "api": "https://explorer-api.devnet.solana.com"
+            },
+            "contracts": {
+                "axelar_solana_memo_program": {
+                    "address": "mem7LhKWbKydCPk1TwNzeCvVSpoVx2mqxNuvjGgWAbG"
+                }
+            }
+        },
+        "eth-sepolia": {
+            "contracts": {
+                "AxelarMemo": {
+                    "address": "0x8c85fB64504F72367E4bcECC8ea5D9DEac7977DA",
+                    "gatewayAddress": "0xF128c84c3326727c3e155168daAa4C0156B87AD1",
+                    "itsAddress": "0x2269B93c8D8D4AfcE9786d2940F5Fcd4386Db7ff"
+                }
+            }
+        },
+        "avalanche-fuji": {
+            "name": "Avalanche Fuji",
+            "axelarId": "avalanche-fuji",
+            "chainId": 43113,
+            "rpc": "https://avalanche-fuji-c-chain-rpc.publicnode.com",
+            "tokenSymbol": "AVAX",
+            "confirmations": 1,
+            "chainType": "evm",
+            "explorer": {
+                "name": "Snowtrace",
+                "url": "https://testnet.snowtrace.io",
+                "api": "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan"
+            },
+            "finality": "finalized",
+            "approxFinalityWaitTime": 1,
+            "contracts": {
+                "AxelarMemo": {
+                    "address": "0x1290c5e631f36510aD0DEfdbA7FCF7f374F17F82",
+                    "gatewayAddress": "0xF128c84c3326727c3e155168daAa4C0156B87AD1",
+                    "itsAddress": "0x2269B93c8D8D4AfcE9786d2940F5Fcd4386Db7ff"
+                }
+            }
+        },
+        "optimism-sepolia": {
+            "name": "Optimism Sepolia",
+            "axelarId": "optimism-sepolia",
+            "chainId": 11155420,
+            "rpc": "https://sepolia.optimism.io",
+            "tokenSymbol": "ETH",
+            "confirmations": 1,
+            "chainType": "evm",
+            "explorer": {
+                "name": "Opscan",
+                "url": "https://sepolia-optimistic.etherscan.io",
+                "api": "https://api-sepolia-optimistic.etherscan.io/api"
+            },
+            "finality": "finalized",
+            "approxFinalityWaitTime": 40,
+            "contracts": {
+                "AxelarMemo": {
+                    "address": "0x1Dfe2a94f907541fAC75c018acf400825DffCfA5",
+                    "gatewayAddress": "0xF128c84c3326727c3e155168daAa4C0156B87AD1",
+                    "itsAddress": "0x2269B93c8D8D4AfcE9786d2940F5Fcd4386Db7ff"
+                }
+            }
+        }
+    }
+}
