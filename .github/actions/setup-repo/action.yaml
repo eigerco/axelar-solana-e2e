@@ -1,0 +1,52 @@
+name: "Setup Action"
+description: "A reusable composite action that sets up the testing environment"
+inputs:
+  rust-cache:
+    description: "which cache to use for Rust"
+    required: false
+    default: "github"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install nightly
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-all-crates: true
+        cache-on-failure: true
+        cache-provider: ${{ inputs.rust-cache }}
+        workspaces: |
+          solana-axelar/solana
+
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: nightly
+
+    - name: Install Solana
+      shell: bash
+      run: |
+        curl -sSfL https://release.anza.xyz/stable/install | sh
+        echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+    - name: Install needed tooling (needed for solana deps)
+      shell: bash
+      run: |
+        sudo apt-get install -y protobuf-compiler bzip2 clang
+
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 23
+
+    - name: Install node deps
+      shell: bash
+      run: npm install
+
+    - name: Build EVM contracts
+      shell: bash
+      run: node build/build.js -c evm
