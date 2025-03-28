@@ -1,0 +1,42 @@
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  RUSTFLAGS: -D warnings
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash    
+
+
+name: test
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup repo
+        uses: ./.github/actions/setup-repo
+        with:
+          rust-cache: "buildjet"
+
+      - name: npm test
+        env:
+          AXELAR_CHAIN: ${{ vars.AXELAR_CHAIN }}
+          EVM_CHAIN: ${{ vars.EVM_CHAIN }}
+          EVM_KEY: ${{ secrets.EVM_KEY }}
+          SOLANA_CHAIN: ${{ vars.SOLANA_CHAIN }}
+          SOLANA_KEY: ${{ secrets.SOLANA_KEY }}
+        run: npm test

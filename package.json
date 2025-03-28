@@ -1,0 +1,19 @@
+{
+  "type": "commonjs",
+  "dependencies": {
+    "@axelar-network/axelarjs-sdk": "^0.17.3-alpha.6",
+    "@native-to-anchor/axelar-solana": "file:solana-axelar/solana/bindings/generated",
+    "chai": "^4.2.0",
+    "commander": "^13.1.0",
+    "crypto": "^1.0.1",
+    "deepmerge": "^4.3.1",
+    "dotenv": "^16.3.1",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.7",
+    "mocha": "^11.1.0",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "test": "mocha --parallel"
+  }
+}

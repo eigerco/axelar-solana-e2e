@@ -1,0 +1,3 @@
+[submodule "solana-axelar"]
+	path = solana-axelar
+	url = git@github.com:eigerco/solana-axelar.git
