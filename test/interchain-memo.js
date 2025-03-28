@@ -33,7 +33,8 @@ describe('AxelarMemo Flow', function() {
 
     // Keep memo shorter than 10 characters, otherwise solana memo program
     // doesn't log it.
-    const memo = "e2e test"
+    const randomSuffix = utils.generateRandomString(2);
+    const memo = "e2e test" + randomSuffix;
 
     before(async () => {
         solanaMemoProgram = axelarSolanaMemoProgramProgram({
