@@ -1,5 +1,6 @@
 const chai = require("chai");
 const solanaWeb3 = require("@solana/web3.js");
+const path = require("path");
 const { getOrCreateAssociatedTokenAccount } = require(
     "@solana/spl-token",
 );
@@ -35,7 +36,9 @@ chai.use(solidity);
 describe("Solana -> EVM Native Interchain Token", function() {
     this.timeout("20m");
 
-    const setup = utils.setupConnections();
+    const fileName = path.parse(__filename).name;
+    const evmKeyEnvVar = utils.toSnakeCaseCapital(fileName);
+    const setup = utils.setupConnections(evmKeyEnvVar);
     const evmItsInfo = utils.getContractInfo(
         "InterchainTokenService",
         setup.evm.chainName,

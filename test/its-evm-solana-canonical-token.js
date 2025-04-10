@@ -1,6 +1,7 @@
 const chai = require("chai");
 const solanaWeb3 = require("@solana/web3.js");
 const utils = require("../lib/utils.js");
+const path = require("path");
 const { Buffer } = require("node:buffer");
 
 const { AXELAR_SOLANA_GATEWAY_PROGRAM_ID } = require(
@@ -28,7 +29,9 @@ chai.use(solidity);
 describe("EVM -> Solana Canonical Interchain Token", function() {
     this.timeout("20m");
 
-    const setup = utils.setupConnections();
+    const fileName = path.parse(__filename).name;
+    const evmKeyEnvVar = utils.toSnakeCaseCapital(fileName);
+    const setup = utils.setupConnections(evmKeyEnvVar);
     const evmItsInfo = utils.getContractInfo(
         "InterchainTokenService",
         setup.evm.chainName,

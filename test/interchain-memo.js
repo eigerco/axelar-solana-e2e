@@ -2,6 +2,7 @@ const chai = require("chai");
 const ethers = require("ethers");
 const solanaWeb3 = require("@solana/web3.js");
 const utils = require("../lib/utils.js");
+const path = require("path");
 
 const { AXELAR_SOLANA_GATEWAY_PROGRAM_ID } = require(
     "@eiger/solana-axelar/anchor/gateway",
@@ -20,7 +21,9 @@ chai.use(solidity);
 describe("AxelarMemo Flow", function() {
     this.timeout("20m");
 
-    const setup = utils.setupConnections();
+    const fileName = path.parse(__filename).name;
+    const evmKeyEnvVar = utils.toSnakeCaseCapital(fileName);
+    const setup = utils.setupConnections(evmKeyEnvVar);
     const evmMemoInfo = utils.getContractInfo(
         "AxelarMemo",
         setup.evm.chainName,
