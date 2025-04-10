@@ -146,7 +146,7 @@ describe("EVM -> Solana Canonical Interchain Token", function() {
                 );
         });
 
-        it("Should be able to trnsfer tokens from EVM to Solana", async () => {
+        it("Should be able to transfer tokens from EVM to Solana", async () => {
             const approvalTx = await token.approve(evmItsContract.address, transferAmount);
             await approvalTx.wait();
 
