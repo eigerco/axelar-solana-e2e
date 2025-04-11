@@ -93,24 +93,26 @@ describe("Solana -> EVM Native Interchain Token", function() {
             tokenId,
         );
 
-        await solanaItsProgram.deployInterchainToken({
+        const deployTx = await solanaItsProgram.deployInterchainToken({
             payer: setup.solana.wallet.payer.publicKey,
             salt: Array.from(salt),
             name,
             symbol,
             decimals,
             minter: setup.solana.wallet.payer.publicKey,
-        }).rpc();
+        }).transaction();
+        await utils.sendSolanaTransaction(setup.solana, deployTx);
 
-        await solanaItsProgram.approveDeployRemoteInterchainToken({
+        const approveTx = await solanaItsProgram.approveDeployRemoteInterchainToken({
             payer: setup.solana.wallet.payer.publicKey,
             deployer: setup.solana.wallet.payer.publicKey,
             salt: Array.from(salt),
             destinationChain: setup.evm.chainName,
             destinationMinter: arrayify(setup.evm.wallet.address),
-        }).rpc();
+        }).transaction();
+        await utils.sendSolanaTransaction(setup.solana, approveTx);
 
-        const txHash = await solanaItsProgram.deployRemoteInterchainTokenWithMinter({
+        const tx = await solanaItsProgram.deployRemoteInterchainTokenWithMinter({
             payer: setup.solana.wallet.payer.publicKey,
             salt: Array.from(salt),
             minter: setup.solana.wallet.payer.publicKey,
@@ -119,7 +121,8 @@ describe("Solana -> EVM Native Interchain Token", function() {
             gasValue: new BN(gasValue),
             gasService: setup.solana.gasService,
             gasConfigPda: setup.solana.gasConfigPda,
-        }).rpc();
+        }).transaction();
+        const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
         const srcGmpDetails = await utils.waitForGmpExecution(
             txHash,
@@ -173,18 +176,19 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 );
 
             // Minting needs to go through ITS
-            await solanaItsProgram.interchainToken.mint({
+            const mintTx = await solanaItsProgram.interchainToken.mint({
                 tokenId,
                 mint: token,
                 to: associatedTokenAccount.address,
                 minter: setup.solana.wallet.payer.publicKey,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 amount: new BN(transferAmount),
-            }).rpc();
+            }).transaction();
+            await utils.sendSolanaTransaction(setup.solana, mintTx);
         });
 
         it("Should be able to transfer tokens from Solana to EVM", async () => {
-            const txHash = await solanaItsProgram.interchainTransfer({
+            const tx = await solanaItsProgram.interchainTransfer({
                 payer: setup.solana.wallet.payer.publicKey,
                 sourceAccount: associatedTokenAccount.address,
                 authority: setup.solana.wallet.payer.publicKey,
@@ -197,7 +201,8 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
-            }).rpc();
+            }).transaction();
+            const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,
@@ -275,14 +280,15 @@ describe("Solana -> EVM Native Interchain Token", function() {
 
         before(async () => {
             // Minting needs to go through ITS
-            await solanaItsProgram.interchainToken.mint({
+            const mintTx = await solanaItsProgram.interchainToken.mint({
                 tokenId,
                 mint: token,
                 to: associatedTokenAccount.address,
                 minter: setup.solana.wallet.payer.publicKey,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 amount: new BN(transferAmount),
-            }).rpc();
+            }).transaction();
+            await utils.sendSolanaTransaction(setup.solana, mintTx);
 
             const evmMemoInfo = utils.getContractInfo(
                 "AxelarMemo",
@@ -319,7 +325,7 @@ describe("Solana -> EVM Native Interchain Token", function() {
         });
 
         it("Should be able to call Memo contract with tokens from Solana to EVM", async () => {
-            const txHash = await solanaItsProgram.callContractWithInterchainToken({
+            const tx = await solanaItsProgram.callContractWithInterchainToken({
                 payer: setup.solana.wallet.payer.publicKey,
                 sourceAccount: associatedTokenAccount.address,
                 authority: setup.solana.wallet.payer.publicKey,
@@ -333,7 +339,8 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
-            }).rpc();
+            }).transaction();
+            const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,

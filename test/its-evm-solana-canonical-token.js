@@ -181,7 +181,7 @@ describe("EVM -> Solana Canonical Interchain Token", function() {
         });
 
         it("Should be able to transfer tokens from Solana to EVM", async () => {
-            const txHash = await solanaItsProgram.interchainTransfer({
+            const tx = await solanaItsProgram.interchainTransfer({
                 payer: setup.solana.wallet.payer.publicKey,
                 sourceAccount: associatedTokenAccount.address,
                 authority: setup.solana.wallet.payer.publicKey,
@@ -194,7 +194,8 @@ describe("EVM -> Solana Canonical Interchain Token", function() {
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
-            }).rpc();
+            }).transaction();
+            const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,

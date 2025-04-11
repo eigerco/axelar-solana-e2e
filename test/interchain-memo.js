@@ -69,7 +69,7 @@ describe("AxelarMemo Flow", function() {
             AXELAR_SOLANA_MEMO_PROGRAM_PROGRAM_ID,
         );
 
-        let txHash = await solanaMemoProgram.methods.sendToGateway(
+        const tx = await solanaMemoProgram.methods.sendToGateway(
             memo,
             setup.evm.chainName,
             evmMemoInfo.address,
@@ -79,7 +79,8 @@ describe("AxelarMemo Flow", function() {
             signingPda0: signingPda,
             gatewayRootPda: gatewayRootPdaPublicKey,
             gatewayProgram: AXELAR_SOLANA_GATEWAY_PROGRAM_ID,
-        }).rpc();
+        }).transaction();
+        const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
         const gmpDetails = await utils.waitForGmpExecution(
             txHash,
@@ -105,6 +106,7 @@ describe("AxelarMemo Flow", function() {
                 isWritable: true,
             }],
         );
+        tx.wait();
 
         const gmpDetails = await utils.waitForGmpExecution(
             tx.hash,

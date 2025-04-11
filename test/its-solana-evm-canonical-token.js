@@ -82,14 +82,14 @@ describe("Solana -> EVM Canonical Interchain Token", function() {
 
     it("Should register the token on Solana and deploy remotely on the EVM chain", async () => {
         tokenId = canonicalInterchainTokenId(token);
-
-        await solanaItsProgram.registerCanonicalInterchainToken({
+        const tx = await solanaItsProgram.registerCanonicalInterchainToken({
             payer: setup.solana.wallet.payer.publicKey,
             mint: token,
             tokenProgram: TOKEN_PROGRAM_ID,
-        }).rpc();
+        }).transaction();
+        await utils.sendSolanaTransaction(setup.solana, tx);
 
-        const txHash = await solanaItsProgram
+        const deployTx = await solanaItsProgram
             .deployRemoteCanonicalInterchainToken({
                 payer: setup.solana.wallet.payer.publicKey,
                 mint: token,
@@ -98,7 +98,8 @@ describe("Solana -> EVM Canonical Interchain Token", function() {
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
                 tokenProgram: TOKEN_PROGRAM_ID,
-            }).rpc();
+            }).transaction();
+        const txHash = await utils.sendSolanaTransaction(setup.solana, deployTx);
 
         const srcGmpDetails = await utils.waitForGmpExecution(
             txHash,
@@ -125,7 +126,7 @@ describe("Solana -> EVM Canonical Interchain Token", function() {
 
     describe("InterchainTransfer", () => {
         it("Should be able to transfer tokens from Solana to EVM", async () => {
-            const txHash = await solanaItsProgram.interchainTransfer({
+            const tx = await solanaItsProgram.interchainTransfer({
                 payer: setup.solana.wallet.payer.publicKey,
                 sourceAccount: associatedTokenAccount.address,
                 authority: setup.solana.wallet.payer.publicKey,
@@ -138,7 +139,8 @@ describe("Solana -> EVM Canonical Interchain Token", function() {
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
                 tokenProgram: TOKEN_PROGRAM_ID,
-            }).rpc();
+            }).transaction();
+            const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,

@@ -84,7 +84,7 @@ describe("Solana -> EVM Existing Custom Token", function() {
                 transferAmount,
             );
 
-        const solanaMetadataTxHash = await solanaItsProgram
+        const solanaMetadataTx = await solanaItsProgram
             .registerTokenMetadata({
                 payer: setup.solana.wallet.payer.publicKey,
                 mint: token,
@@ -92,7 +92,8 @@ describe("Solana -> EVM Existing Custom Token", function() {
                 gasValue: new BN(0),
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
-            }).rpc();
+            }).transaction();
+        const solanaMetadataTxHash = await utils.sendSolanaTransaction(setup.solana, solanaMetadataTx);
 
         evmToken = await utils.deployEvmContract(
             setup.evm.wallet,
@@ -129,7 +130,7 @@ describe("Solana -> EVM Existing Custom Token", function() {
     });
 
     it("Should register the token on Solana and deploy remotely on the EVM chain", async () => {
-        await solanaItsProgram
+        const registrationTx = await solanaItsProgram
             .registerCustomToken({
                 payer: setup.solana.wallet.payer.publicKey,
                 salt,
@@ -137,16 +138,18 @@ describe("Solana -> EVM Existing Custom Token", function() {
                 tokenManagerType: TokenManagerType.MintBurn,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 operator: setup.solana.wallet.payer.publicKey,
-            }).rpc();
+            }).transaction();
+        await utils.sendSolanaTransaction(setup.solana, registrationTx);
 
-        await solanaItsProgram.tokenManager.handOverMintAuthority({
+        const handOverMintAuthorityTx = await solanaItsProgram.tokenManager.handOverMintAuthority({
             payer: setup.solana.wallet.payer.publicKey,
             tokenId,
             mint: token,
             TOKEN_PROGRAM_ID,
-        }).rpc();
+        }).transaction();
+        await utils.sendSolanaTransaction(setup.solana, handOverMintAuthorityTx);
 
-        const txHash = await solanaItsProgram.linkToken({
+        const tx = await solanaItsProgram.linkToken({
             payer: setup.solana.wallet.payer.publicKey,
             salt,
             destinationChain: setup.evm.chainName,
@@ -157,7 +160,8 @@ describe("Solana -> EVM Existing Custom Token", function() {
             gasService: setup.solana.gasService,
             gasConfigPda: setup.solana.gasConfigPda,
             tokenProgram: TOKEN_PROGRAM_ID,
-        }).rpc();
+        }).transaction();
+        const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
         const srcGmpDetails = await utils.waitForGmpExecution(
             txHash,
@@ -182,7 +186,7 @@ describe("Solana -> EVM Existing Custom Token", function() {
 
     describe("InterchainTransfer", () => {
         it("Should be able to transfer tokens from Solana to EVM", async () => {
-            const txHash = await solanaItsProgram.interchainTransfer({
+            const tx = await solanaItsProgram.interchainTransfer({
                 payer: setup.solana.wallet.payer.publicKey,
                 sourceAccount: associatedTokenAccount.address,
                 authority: setup.solana.wallet.payer.publicKey,
@@ -195,7 +199,8 @@ describe("Solana -> EVM Existing Custom Token", function() {
                 gasService: setup.solana.gasService,
                 gasConfigPda: setup.solana.gasConfigPda,
                 tokenProgram: TOKEN_PROGRAM_ID,
-            }).rpc();
+            }).transaction();
+            const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,
