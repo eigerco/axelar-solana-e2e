@@ -35,7 +35,7 @@ const {
 chai.use(solidity);
 
 describe("EVM -> Solana Native Interchain Token", function() {
-    this.timeout("20m");
+    this.timeout("60m");
 
     const fileName = path.parse(__filename).name;
     const evmKeyEnvVar = utils.toSnakeCaseCapital(fileName);

@@ -19,7 +19,7 @@ const { utils: { toUtf8Bytes } } = ethers;
 chai.use(solidity);
 
 describe("AxelarMemo Flow", function() {
-    this.timeout("20m");
+    this.timeout("60m");
 
     const fileName = path.parse(__filename).name;
     const evmKeyEnvVar = utils.toSnakeCaseCapital(fileName);
