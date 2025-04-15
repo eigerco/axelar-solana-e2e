@@ -2,7 +2,9 @@
   "type": "commonjs",
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "^0.17.3-alpha.6",
-    "@native-to-anchor/axelar-solana": "file:solana-axelar/solana/bindings/generated",
+    "@coral-xyz/anchor": "^0.29.0",
+    "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
+    "@eiger/solana-axelar": "file:solana-axelar/solana/bindings",
     "chai": "^4.2.0",
     "commander": "^13.1.0",
     "crypto": "^1.0.1",
@@ -14,6 +16,9 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "test": "mocha --parallel"
+    "test": "mocha --parallel --require lib/test_funding.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10"
   }
 }

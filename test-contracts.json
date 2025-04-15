@@ -12,8 +12,17 @@
                 "api": "https://explorer-api.devnet.solana.com"
             },
             "contracts": {
+                "axelar_solana_gas_service": {
+                    "address": "gasFkyvr4LjK3WwnMGbao3Wzr67F88TmhKmi4ZCXF9K",
+                    "config_pda": "GNNNDeAMMdYfN5RGizXN4DdpTpBXWa9UvFLg4JyvivvK"
+                },
                 "axelar_solana_memo_program": {
                     "address": "mem7LhKWbKydCPk1TwNzeCvVSpoVx2mqxNuvjGgWAbG"
+                },
+                "axelar_solana_its": {
+                    "address": "itsbPmAntHfec9PpLDoh9y3UiAEPT7DnzSvoJzdzZqd",
+                    "operator": "5Jja5kAvCFkixQSQhKpKWgWRx8FX6eh3FXH7oqJ98x7",
+                    "its_hub_address": "axelar157hl7gpuknjmhtac2qnphuazv2yerfagva7lsu9vuj2pgn32z22qa26dk4"
                 }
             }
         },
