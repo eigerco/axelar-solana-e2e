@@ -17,12 +17,24 @@ const {
 const { BN } = require("@coral-xyz/anchor");
 const { SolanaAxelarExecutablePayload, EncodingSchema } = require("@eiger/solana-axelar/executable");
 const {
+    DeployRemoteInterchainTokenApproval,
+    ITS_EVENT_PARSER_MAP,
+    InterchainTokenDeployed,
+    InterchainTokenDeploymentStarted,
+    InterchainTokenIdClaimed,
+    InterchainTransfer,
+    InterchainTransferReceived,
     ItsInstructions,
-    interchainTokenId,
+    TokenManagerDeployed,
+    TokenManagerType,
     findInterchainTokenPda,
+    interchainTokenId,
 } = require(
-    "@eiger/solana-axelar/its",
+    "@eiger/solana-axelar/its"
 );
+const {
+    parseEventsFromLogs
+} = require("@eiger/solana-axelar/event-utils");
 const { PublicKey } = solanaWeb3;
 const { TOKEN_2022_PROGRAM_ID } = require(
     "@solana/spl-token",
@@ -101,7 +113,30 @@ describe("Solana -> EVM Native Interchain Token", function() {
             decimals,
             minter: setup.solana.wallet.payer.publicKey,
         }).transaction();
-        await utils.sendSolanaTransaction(setup.solana, deployTx);
+        const deployTxHash = await utils.sendSolanaTransaction(setup.solana, deployTx);
+        const deployTxWithLogs = await setup.solana.connection.getTransaction(deployTxHash, {
+            maxSupportedTransactionVersion: 0,
+        });
+        var emittedEvents = parseEventsFromLogs(
+            deployTxWithLogs.meta.logMessages,
+            ITS_EVENT_PARSER_MAP,
+        );
+
+        const interchainTokenIdClaimed = emittedEvents.find(event => event instanceof InterchainTokenIdClaimed);
+        expect(interchainTokenIdClaimed).to.exist;
+        expect(interchainTokenIdClaimed.tokenId.equals(tokenId)).to.be.true;
+        expect(interchainTokenIdClaimed.deployer.equals(setup.solana.wallet.payer.publicKey)).to.be.true;
+
+        const tokenManagerDeployedEvent = emittedEvents.find(event => event instanceof TokenManagerDeployed);
+        expect(tokenManagerDeployedEvent).to.exist;
+        expect(tokenManagerDeployedEvent.tokenId.equals(tokenId)).to.be.true;
+        expect(tokenManagerDeployedEvent.tokenManagerType).to.equal(TokenManagerType.NativeInterchainToken);
+
+        const interchainTokenDeployed = emittedEvents.find(event => event instanceof InterchainTokenDeployed);
+        expect(interchainTokenDeployed).to.exist;
+        expect(interchainTokenDeployed.tokenId.equals(tokenId)).to.be.true;
+        expect(interchainTokenDeployed.name).to.equal(name);
+        expect(interchainTokenDeployed.symbol).to.equal(symbol);
 
         const approveTx = await solanaItsProgram.approveDeployRemoteInterchainToken({
             payer: setup.solana.wallet.payer.publicKey,
@@ -110,7 +145,21 @@ describe("Solana -> EVM Native Interchain Token", function() {
             destinationChain: setup.evm.chainName,
             destinationMinter: arrayify(setup.evm.wallet.address),
         }).transaction();
-        await utils.sendSolanaTransaction(setup.solana, approveTx);
+        const approveTxHash = await utils.sendSolanaTransaction(setup.solana, approveTx);
+        const approveTxWithLogs = await setup.solana.connection.getTransaction(approveTxHash, {
+            maxSupportedTransactionVersion: 0,
+        });
+        emittedEvents = parseEventsFromLogs(
+            approveTxWithLogs.meta.logMessages,
+            ITS_EVENT_PARSER_MAP,
+        );
+
+        const deployRemoteInterchainTokenApproval = emittedEvents.find(event => event instanceof DeployRemoteInterchainTokenApproval);
+        expect(deployRemoteInterchainTokenApproval).to.exist;
+        expect(deployRemoteInterchainTokenApproval.minter.equals(setup.solana.wallet.payer.publicKey)).to.be.true;
+        expect(deployRemoteInterchainTokenApproval.deployer.equals(setup.solana.wallet.payer.publicKey)).to.be.true;
+        expect(deployRemoteInterchainTokenApproval.tokenId.equals(tokenId)).to.be.true;
+        expect(deployRemoteInterchainTokenApproval.destinationMinter.equals(arrayify(setup.evm.wallet.address))).to.be.true;
 
         const tx = await solanaItsProgram.deployRemoteInterchainTokenWithMinter({
             payer: setup.solana.wallet.payer.publicKey,
@@ -123,6 +172,22 @@ describe("Solana -> EVM Native Interchain Token", function() {
             gasConfigPda: setup.solana.gasConfigPda,
         }).transaction();
         const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
+        const txWithLogs = await setup.solana.connection.getTransaction(txHash, {
+            maxSupportedTransactionVersion: 0,
+        });
+        emittedEvents = parseEventsFromLogs(
+            txWithLogs.meta.logMessages,
+            ITS_EVENT_PARSER_MAP,
+        );
+
+        const interchainTokenDeploymentStarted = emittedEvents.find(event => event instanceof InterchainTokenDeploymentStarted);
+        expect(interchainTokenDeploymentStarted).to.exist;
+        expect(interchainTokenDeploymentStarted.tokenId.equals(tokenId)).to.be.true;
+        expect(interchainTokenDeploymentStarted.tokenName).to.equal(name);
+        expect(interchainTokenDeploymentStarted.tokenSymbol).to.equal(symbol);
+        expect(interchainTokenDeploymentStarted.tokenDecimals).to.equal(decimals);
+        expect(interchainTokenDeploymentStarted.minter.equals(arrayify(setup.evm.wallet.address))).to.be.true;
+        expect(interchainTokenDeploymentStarted.destinationChain).to.equal(setup.evm.chainName);
 
         const srcGmpDetails = await utils.waitForGmpExecution(
             txHash,
@@ -203,6 +268,20 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
             }).transaction();
             const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
+            const solanaTransaction = await setup.solana.connection.getTransaction(txHash, {
+                maxSupportedTransactionVersion: 0,
+            });
+            let emittedEvents = parseEventsFromLogs(
+                solanaTransaction.meta.logMessages,
+                ITS_EVENT_PARSER_MAP,
+            );
+
+            const interchainTransferEvent = emittedEvents.find(event => event instanceof InterchainTransfer);
+            expect(interchainTransferEvent).to.exist;
+            expect(interchainTransferEvent.tokenId.equals(tokenId)).to.be.true;
+            expect(interchainTransferEvent.destinationAddress.equals(arrayify(setup.evm.wallet.address))).to.be.true;
+            expect(interchainTransferEvent.destinationChain).to.equal(setup.evm.chainName);
+            expect(interchainTransferEvent.amount).to.equal(transferAmount);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,
@@ -246,7 +325,7 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 tx.hash,
                 setup.axelar,
             );
-            await utils.waitForGmpExecution(
+            const dstGmpDetails = await utils.waitForGmpExecution(
                 srcGmpDetails.executed.transactionHash,
                 setup.axelar,
             );
@@ -261,6 +340,21 @@ describe("Solana -> EVM Native Interchain Token", function() {
             );
 
             expect(currentBalance).to.equal(expectedBalance);
+
+            const solanaTransaction = await setup.solana.connection.getTransaction(dstGmpDetails.executed.transactionHash, {
+                maxSupportedTransactionVersion: 0,
+            });
+            let emittedEvents = parseEventsFromLogs(
+                solanaTransaction.meta.logMessages,
+                ITS_EVENT_PARSER_MAP,
+            );
+
+            const interchainTransferReceivedEvent = emittedEvents.find(event => event instanceof InterchainTransferReceived);
+            expect(interchainTransferReceivedEvent).to.exist;
+            expect(interchainTransferReceivedEvent.tokenId.equals(tokenId)).to.be.true;
+            expect(interchainTransferReceivedEvent.sourceAddress.equals(arrayify(setup.evm.wallet.address))).to.be.true;
+            expect(interchainTransferReceivedEvent.amount).to.equal(transferAmount);
+            expect(interchainTransferReceivedEvent.destinationAddress.equals(associatedTokenAccount.address)).to.be.true;
         });
     });
 
@@ -341,6 +435,20 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
             }).transaction();
             const txHash = await utils.sendSolanaTransaction(setup.solana, tx);
+            const solanaTransaction = await setup.solana.connection.getTransaction(txHash, {
+                maxSupportedTransactionVersion: 0,
+            });
+            let emittedEvents = parseEventsFromLogs(
+                solanaTransaction.meta.logMessages,
+                ITS_EVENT_PARSER_MAP,
+            );
+
+            const interchainTransferEvent = emittedEvents.find(event => event instanceof InterchainTransfer);
+            expect(interchainTransferEvent).to.exist;
+            expect(interchainTransferEvent.tokenId.equals(tokenId)).to.be.true;
+            expect(interchainTransferEvent.destinationAddress.equals(arrayify(evmMemoContract.address))).to.be.true;
+            expect(interchainTransferEvent.destinationChain).to.equal(setup.evm.chainName);
+            expect(interchainTransferEvent.amount).to.equal(transferAmount);
 
             const srcGmpDetails = await utils.waitForGmpExecution(
                 txHash,
@@ -407,7 +515,7 @@ describe("Solana -> EVM Native Interchain Token", function() {
                 tx.hash,
                 setup.axelar,
             );
-            await utils.waitForGmpExecution(
+            const dstGmpDetails = await utils.waitForGmpExecution(
                 srcGmpDetails.executed.transactionHash,
                 setup.axelar,
             );
@@ -421,6 +529,21 @@ describe("Solana -> EVM Native Interchain Token", function() {
             );
 
             expect(currentBalance).to.equal(transferAmount);
+
+            const solanaTransaction = await setup.solana.connection.getTransaction(dstGmpDetails.executed.transactionHash, {
+                maxSupportedTransactionVersion: 0,
+            });
+            let emittedEvents = parseEventsFromLogs(
+                solanaTransaction.meta.logMessages,
+                ITS_EVENT_PARSER_MAP,
+            );
+
+            const interchainTransferReceivedEvent = emittedEvents.find(event => event instanceof InterchainTransferReceived);
+            expect(interchainTransferReceivedEvent).to.exist;
+            expect(interchainTransferReceivedEvent.tokenId.equals(tokenId)).to.be.true;
+            expect(interchainTransferReceivedEvent.sourceAddress.equals(arrayify(setup.evm.wallet.address))).to.be.true;
+            expect(interchainTransferReceivedEvent.amount).to.equal(transferAmount);
+            expect(interchainTransferReceivedEvent.destinationAddress.equals(memoAssociatedTokenAccount.address)).to.be.true;
         });
     });
 });
