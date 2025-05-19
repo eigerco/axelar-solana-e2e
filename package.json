@@ -4,7 +4,7 @@
     "@axelar-network/axelarjs-sdk": "^0.17.3-alpha.6",
     "@coral-xyz/anchor": "^0.29.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
-    "@eiger/solana-axelar": "file:solana-axelar/solana/bindings",
+    "@eiger/solana-axelar": "file:solana-axelar/bindings",
     "chai": "^4.2.0",
     "commander": "^13.1.0",
     "crypto": "^1.0.1",

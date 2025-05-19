@@ -47,14 +47,14 @@ function buildEvm() {
 }
 
 function buildSolana() {
-    exec('cd solana-axelar/solana/ && cargo xtask build', (err, stdout, stderr) => {
+    exec('cd solana-axelar/ && cargo xtask build', (err, stdout, stderr) => {
         if (err) {
             console.error(err);
             console.log(stderr);
 
             return -1;
         } else {
-            fs.symlinkSync('../solana-axelar/solana/target/sbf-solana-solana/release', '.artifacts/solana');
+            fs.symlinkSync('../solana-axelar/target/sbf-solana-solana/release', '.artifacts/solana');
         }
     });
 }
